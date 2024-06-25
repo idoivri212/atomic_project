@@ -1,5 +1,5 @@
 import numpy as np
-
+# Found on the web, need to verify and understand
 # Constants
 R = 8.314  # Universal gas constant in J/(mol·K)
 
