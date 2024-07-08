@@ -7,9 +7,8 @@ class Stage:
     delta_m = 0.003  # Mass difference between the isotopes in kg/mol
     uf6_ro = 0
 
-    def __init__(self, alpha, theta, Q, n_centrifuges):
+    def __init__(self, alpha, Q, n_centrifuges):
         self.alpha = alpha
-        self.theta = theta
         self.Q = Q * n_centrifuges
 
     def calc_alpha(self, omega, r):
@@ -29,12 +28,9 @@ class Stage:
         :param n_feed:
         :return:
         """
-        n_prod = (self.alpha * n_feed) / (1 + n_feed * (self.alpha - 1)) # R'=alpha*R
-        n_waste = n_feed / (self.alpha*(1-n_feed) + n_feed) # R"=R/alpha
+        n_prod = (self.alpha * n_feed) / (1 + n_feed * (self.alpha - 1))  # R'=alpha*R
+        n_waste = n_feed / (self.alpha*(1-n_feed) + n_feed)  # R"=R/alpha
         theta = (n_feed-n_waste)/(n_prod-n_waste)
-
-        if not theta == self.theta:
-            print("The cascade is mixing! Notice that alpha and theta break the no-mixing condition!")
 
         p = theta * feed
         w = (1-theta)*feed

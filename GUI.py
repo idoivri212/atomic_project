@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QColor
 from cascade import Cascade
+import datetime
 
 
 class CentrifugeRowSelectionApp(QWidget):
@@ -24,42 +25,51 @@ class CentrifugeRowSelectionApp(QWidget):
 
         form_layout = QFormLayout()
 
-        self.stripper_row_combo = QLineEdit()
+        """        self.stripper_row_combo = QLineEdit()
         self.stripper_row_combo.setPlaceholderText("Select number of Stripper rows")
-        form_layout.addRow(self.stripper_row_combo)
+        form_layout.addRow(self.stripper_row_combo)"""
+
+        self.label1 = QLabel("Cascade Parameters")
+        self.label1.setStyleSheet("font-size:20px;")
+        form_layout.addRow(self.label1)
 
         self.rectifier_row_combo = QLineEdit()
-        self.rectifier_row_combo.setPlaceholderText("Select number of Stripper rows")
-        form_layout.addRow(self.rectifier_row_combo)
-
+        self.rectifier_row_combo.setPlaceholderText("N. Rows")
 
         self.alpha = QLineEdit()
-        self.alpha.setPlaceholderText("Centrifuge Alpha")
-
-        self.theta = QLineEdit()
-        self.theta.setPlaceholderText("Centrifuge Theta")
+        self.alpha.setPlaceholderText("α")
 
         self.Q = QLineEdit()
-        self.Q.setPlaceholderText("Centrifuge Q")
+        self.Q.setPlaceholderText("Q")
 
         param_line = QHBoxLayout()
+        param_line.addWidget(self.rectifier_row_combo)
         param_line.addWidget(self.alpha)
-        param_line.addWidget(self.theta)
         param_line.addWidget(self.Q)
 
         form_layout.addRow(param_line)
 
+        self.label2 = QLabel("Enrichment Parameters")
+        self.label2.setStyleSheet("font-size:20px;")
+        form_layout.addRow(self.label2)
+
         self.concentration = QLineEdit()
-        self.concentration.setPlaceholderText("Flow Concentration")
-
+        self.concentration.setPlaceholderText("Input concentration")
         self.flow = QLineEdit()
-        self.flow.setPlaceholderText("Centrifuge Flow")
-
+        self.flow.setPlaceholderText("Input flow")
         flow_line = QHBoxLayout()
         flow_line.addWidget(self.concentration)
         flow_line.addWidget(self.flow)
-
         form_layout.addRow(flow_line)
+
+        self.goal = QLineEdit()
+        self.goal.setPlaceholderText("Concentration goal")
+        self.amount = QLineEdit()
+        self.amount.setPlaceholderText("Desired amount")
+        goal_line = QHBoxLayout()
+        goal_line.addWidget(self.goal)
+        goal_line.addWidget(self.amount)
+        form_layout.addRow(goal_line)
 
         main_layout.addLayout(form_layout)
 
@@ -80,22 +90,28 @@ class CentrifugeRowSelectionApp(QWidget):
 
     def openCentrifugeSelectionWindow(self):
         # TODO: check if all entries are full
-        stripper_rows = int(self.stripper_row_combo.text())
-        rectifier_rows = int(self.rectifier_row_combo.text())
-        cent_params = int(self.alpha.text()), int(self.theta.text()), int(self.Q.text())
-        flow = self.concentration.text(), self.flow.text()
-        self.centrifuge_selection_window = CentrifugeSelectionApp(stripper_rows, rectifier_rows, cent_params, flow)
-        self.centrifuge_selection_window.show()
-        self.close()
+        # stripper_rows = int(self.stripper_row_combo.text())
+        try:
+            rectifier_rows = int(self.rectifier_row_combo.text())
+            cent_params = float(self.alpha.text()), float(self.Q.text())
+            flow = float(self.concentration.text()), float(self.flow.text())
+            goal = float(self.goal.text()), float(self.amount.text())
+            self.centrifuge_selection_window = CentrifugeSelectionApp(rectifier_rows, cent_params, flow,goal)
+            self.centrifuge_selection_window.show()
+            self.close()
+        except Exception as e:
+            print(e)
+            QMessageBox.critical(self, 'Error', "Please fill in all fields!")
 
 
 class CentrifugeSelectionApp(QWidget):
-    def __init__(self, stripper_rows, rectifier_rows, cent_params, flow):
+    def __init__(self, rect_rows, cent_params, flow, goal):
         super().__init__()
-        self.stripper_rows = stripper_rows
-        self.rectifier_rows = rectifier_rows
+        # self.stripper_rows = stripper_rows
         self.cent_params = cent_params
         self.flow = flow
+        self.goal = goal
+        self.rectifier_rows = rect_rows
         self.initUI()
 
     def initUI(self):
@@ -106,11 +122,10 @@ class CentrifugeSelectionApp(QWidget):
         title.setAlignment(Qt.AlignCenter)
         title.setStyleSheet("color: red; padding: 30px;")  # Bright color for the title
         main_layout.addWidget(title, alignment=Qt.AlignCenter)
-
         config_layout = QHBoxLayout()
 
         # Stripper Configuration
-        stripper_layout = QFormLayout()
+        """        stripper_layout = QFormLayout()
         self.stripper_inputs = []
         stripper_panel = QVBoxLayout()
         stripper_title = QLabel('Stripper')
@@ -125,7 +140,7 @@ class CentrifugeSelectionApp(QWidget):
             self.stripper_inputs.append(centrifuge_count)
             stripper_layout.addRow(centrifuge_count)
         stripper_panel.addLayout(stripper_layout)
-        config_layout.addLayout(stripper_panel)
+        config_layout.addLayout(stripper_panel)"""
 
         # Rectifier Configuration
         rectifier_layout = QFormLayout()
@@ -179,7 +194,7 @@ class CentrifugeSelectionApp(QWidget):
             self.cascade_grid.itemAt(i).widget().setParent(None)
 
         # Update Stripper Visualization
-        for i, input_field in enumerate(self.stripper_inputs):
+        """        for i, input_field in enumerate(self.stripper_inputs):
             try:
                 count = int(input_field.text())
             except ValueError:
@@ -189,10 +204,11 @@ class CentrifugeSelectionApp(QWidget):
                 label.setFixedSize(20, 20)  # Smaller size for better fitting
                 label.setStyleSheet("background-color: lightblue; padding: 5px; border: 1px solid black;")
                 label.setAlignment(Qt.AlignCenter)
-                self.cascade_grid.addWidget(label, i, j, alignment=Qt.AlignCenter)
+                self.cascade_grid.addWidget(label, i, j, alignment=Qt.AlignCenter)"""
 
         # Update Rectifier Visualization
-        start_row = len(self.stripper_inputs)
+        # start_row = len(self.stripper_inputs)
+        start_row = 0
         for i, input_field in enumerate(self.rectifier_inputs):
             try:
                 count = int(input_field.text())
@@ -207,7 +223,7 @@ class CentrifugeSelectionApp(QWidget):
 
     def runSimulation(self):
         # Collect Stripper configurations
-        stripper_config = []
+        """        stripper_config = []
         for input_field in self.stripper_inputs:
             text = input_field.text().strip()
             if text:
@@ -218,7 +234,7 @@ class CentrifugeSelectionApp(QWidget):
                     return
             else:
                 QMessageBox.critical(self, 'Error', "Please fill in all fields in Stripper configuration.")
-                return
+                return"""
 
         # Collect Rectifier configurations
         rectifier_config = []
@@ -235,16 +251,17 @@ class CentrifugeSelectionApp(QWidget):
                 return
 
         # Placeholder for actual simulation logic
-        simulation_results = (
-            f"Stripper Configuration: {stripper_config}\n"
-            f"Rectifier Configuration: {rectifier_config}"
-        )
 
         # Display results in a message box
-        QMessageBox.information(self, 'Simulation Results', simulation_results)
+        try:
+            cascade = Cascade(rectifier_config, self.cent_params, self.flow, self.goal)
+            cascade.run()
+            min = int(cascade.breakout_time*60)
+            QMessageBox.information(self, 'Simulation Results', f"Breakout time is: {min // (24*60)} Days, {(min % (24*60)) // 60} Hours and {min % 60} Minuets")
 
-        cascade = Cascade(rectifier_config, stripper_config, self.cent_params, self.flow)
-        cascade.run()
+            self.close()
+        except Exception as e:
+            print(e)
 
 
 if __name__ == '__main__':
